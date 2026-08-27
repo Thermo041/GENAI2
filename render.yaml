@@ -1,0 +1,134 @@
+# ============================================================
+#  CodeWeave — Render blueprint (render.yaml)
+#
+#  Creates two services:
+#    codeweave-api  — Node/Express backend (runs the indexing worker in-process)
+#    codeweave-web  — Vite static site for the React frontend
+#
+#  Secrets are marked `sync: false`, so Render prompts for them instead of
+#  storing them in this file. Never commit real credentials here.
+# ============================================================
+
+services:
+  - type: web
+    name: codeweave-api
+    runtime: node
+    plan: free
+    region: oregon
+    rootDir: backend
+    buildCommand: npm ci
+    startCommand: npm start
+    healthCheckPath: /api/health
+    autoDeploy: true
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: LOG_LEVEL
+        value: info
+      # Render injects PORT; the server reads process.env.PORT.
+      # Full origins WITH the scheme — CORS and the OAuth redirect compare exact
+      # origins, so "host:port" without https:// will not work. Render prompts for
+      # these on first deploy; paste the two service URLs.
+      - key: CLIENT_URL
+        sync: false
+      - key: SERVER_URL
+        sync: false
+      - key: MONGODB_URI
+        sync: false
+      - key: GITHUB_APP_ID
+        sync: false
+      - key: GITHUB_APP_SLUG
+        sync: false
+      - key: GITHUB_CLIENT_ID
+        sync: false
+      - key: GITHUB_CLIENT_SECRET
+        sync: false
+      # Paste the full PEM with literal \n between lines.
+      - key: GITHUB_PRIVATE_KEY
+        sync: false
+      - key: GITHUB_CALLBACK_URL
+        sync: false
+      - key: GITHUB_WEBHOOK_SECRET
+        sync: false
+      - key: GITHUB_WEBHOOK_URL
+        sync: false
+      - key: GROQ_API_KEY
+        sync: false
+      - key: GROQ_MODEL
+        value: openai/gpt-oss-120b
+      - key: GROQ_MODEL_FAST
+        value: openai/gpt-oss-20b
+      - key: GROQ_TPM_LIMIT
+        value: "8000"
+      - key: QDRANT_URL
+        sync: false
+      - key: QDRANT_API_KEY
+        sync: false
+      - key: QDRANT_COLLECTION
+        value: codeweave_chunks
+      - key: EMBEDDING_PROVIDER
+        value: local
+      - key: EMBEDDING_MODEL
+        value: Xenova/all-MiniLM-L6-v2
+      - key: EMBEDDING_DIM
+        value: "384"
+      - key: EMBEDDING_BATCH_SIZE
+        value: "8"
+      - key: SESSION_SECRET
+        generateValue: true
+      # Must be 64 hex characters (32 bytes). Generate with: openssl rand -hex 32
+      - key: ENCRYPTION_KEY
+        sync: false
+      - key: MAX_FILES
+        value: "400"
+      - key: MAX_FILE_SIZE
+        value: "180000"
+      - key: MAX_CHUNK_CHARS
+        value: "1800"
+      - key: MAX_TOTAL_CHUNKS
+        value: "5000"
+      - key: INDEX_CONCURRENCY
+        value: "4"
+      # Keep true on the free plan: the API process runs the job worker itself.
+      - key: WORKER_ENABLED
+        value: "true"
+      - key: WORKER_POLL_MS
+        value: "2500"
+
+  - type: web
+    name: codeweave-web
+    runtime: static
+    plan: free
+    rootDir: frontend
+    buildCommand: npm ci && npm run build
+    staticPublishPath: dist
+    autoDeploy: true
+    envVars:
+      # Must be the full https URL of the API service.
+      - key: VITE_API_URL
+        sync: false
+    routes:
+      # SPA fallback so deep links such as /r/owner/repo/files work.
+      - type: rewrite
+        source: /*
+        destination: /index.html
+    headers:
+      - path: /assets/*
+        name: Cache-Control
+        value: public, max-age=31536000, immutable
+
+# ------------------------------------------------------------
+# Optional: dedicated background worker (paid plans only).
+# Add this service and set WORKER_ENABLED=false on codeweave-api so indexing
+# never competes with request handling.
+#
+#  - type: worker
+#    name: codeweave-worker
+#    runtime: node
+#    plan: starter
+#    rootDir: backend
+#    buildCommand: npm ci
+#    startCommand: npm run worker
+#    envVars:
+#      - fromGroup: codeweave-shared   # or repeat the variables above
+# ------------------------------------------------------------

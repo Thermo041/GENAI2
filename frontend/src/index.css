@@ -1,0 +1,158 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 210 20% 98%;
+    --foreground: 224 22% 12%;
+    --surface: 210 20% 96%;
+    --card: 0 0% 100%;
+    --card-foreground: 224 22% 12%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 224 22% 12%;
+    --primary: 245 62% 52%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 214 20% 93%;
+    --secondary-foreground: 224 20% 20%;
+    --muted: 214 20% 94%;
+    --muted-foreground: 220 10% 42%;
+    --accent: 245 62% 96%;
+    --accent-foreground: 245 62% 40%;
+    --destructive: 353 72% 50%;
+    --destructive-foreground: 0 0% 100%;
+    --success: 158 68% 34%;
+    --success-foreground: 0 0% 100%;
+    --warning: 32 90% 44%;
+    --warning-foreground: 0 0% 100%;
+    --border: 216 16% 88%;
+    --input: 216 16% 86%;
+    --ring: 245 62% 52%;
+    --radius: 0.5rem;
+  }
+
+  .dark {
+    --background: 225 15% 7%;
+    --foreground: 213 18% 92%;
+    --surface: 225 14% 9%;
+    --card: 225 14% 10%;
+    --card-foreground: 213 18% 92%;
+    --popover: 225 15% 11%;
+    --popover-foreground: 213 18% 92%;
+    --primary: 245 78% 66%;
+    --primary-foreground: 240 40% 10%;
+    --secondary: 224 12% 16%;
+    --secondary-foreground: 213 18% 90%;
+    --muted: 224 12% 15%;
+    --muted-foreground: 218 11% 62%;
+    --accent: 245 40% 18%;
+    --accent-foreground: 245 80% 82%;
+    --destructive: 353 78% 58%;
+    --destructive-foreground: 0 0% 100%;
+    --success: 158 60% 46%;
+    --success-foreground: 150 40% 8%;
+    --warning: 36 92% 58%;
+    --warning-foreground: 30 40% 10%;
+    --border: 223 11% 18%;
+    --input: 223 11% 22%;
+    --ring: 245 78% 66%;
+  }
+
+  * {
+    @apply border-border;
+  }
+
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-feature-settings: 'cv02', 'cv03', 'cv04', 'ss01';
+  }
+
+  ::selection {
+    @apply bg-primary/25;
+  }
+
+  :focus-visible {
+    @apply outline-none ring-2 ring-ring ring-offset-2 ring-offset-background;
+  }
+}
+
+@layer utilities {
+  .scrollbar-thin {
+    scrollbar-width: thin;
+    scrollbar-color: hsl(var(--border)) transparent;
+  }
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 9px;
+    height: 9px;
+  }
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    background-color: hsl(var(--border));
+    border-radius: 999px;
+    border: 2px solid transparent;
+    background-clip: content-box;
+  }
+  .scrollbar-thin::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .grid-backdrop {
+    background-image:
+      linear-gradient(to right, hsl(var(--border) / 0.35) 1px, transparent 1px),
+      linear-gradient(to bottom, hsl(var(--border) / 0.35) 1px, transparent 1px);
+    background-size: 56px 56px;
+    mask-image: radial-gradient(ellipse 80% 60% at 50% 0%, black 40%, transparent 100%);
+  }
+
+  .text-balance {
+    text-wrap: balance;
+  }
+}
+
+/* Markdown-ish rendering for AI answers, kept deliberately plain. */
+.ai-prose {
+  @apply text-sm leading-relaxed text-foreground/90;
+}
+.ai-prose p {
+  @apply mb-3;
+}
+.ai-prose ul,
+.ai-prose ol {
+  @apply mb-3 ml-5 list-outside space-y-1;
+}
+.ai-prose ul {
+  @apply list-disc;
+}
+.ai-prose ol {
+  @apply list-decimal;
+}
+.ai-prose code {
+  @apply rounded bg-muted px-1.5 py-0.5 font-mono text-[0.8125rem] text-accent-foreground;
+}
+.ai-prose pre {
+  @apply mb-3 overflow-x-auto rounded-md border border-border bg-surface p-3;
+}
+.ai-prose pre code {
+  @apply bg-transparent p-0 text-xs text-foreground/90;
+}
+.ai-prose strong {
+  @apply font-semibold text-foreground;
+}
+.ai-prose h1,
+.ai-prose h2,
+.ai-prose h3 {
+  @apply mb-2 mt-4 font-semibold text-foreground;
+}
+
+/* Monaco line highlight used by citation navigation. */
+.cw-highlight-line {
+  background-color: hsl(var(--primary) / 0.14);
+}
+.cw-highlight-gutter {
+  background-color: hsl(var(--primary));
+  width: 2px !important;
+  margin-left: 2px;
+}
