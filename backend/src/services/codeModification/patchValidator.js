@@ -57,22 +57,27 @@ export function applyLineEdits(original, edits) {
 
 /**
  * Validates one AI-proposed file change against the real current file.
- * Rejects: unknown paths, unchanged content, whole-file wipes, truncated
- * output, and edits that do not apply cleanly.
+ * Rejects: unknown paths for modifications, creating over an existing file,
+ * unchanged content, whole-file wipes, truncated output, and edits that do not
+ * apply cleanly. Creating a genuinely new file is allowed.
  */
-export function validateFileChange({ proposed, originalFile, allowedPaths }) {
+export function validateFileChange({ proposed, originalFile, allowedPaths, existingPaths }) {
   const path = assertSafeRepoPath(proposed.path);
+  const isCreate = proposed.action === 'create';
 
-  if (proposed.action !== 'create' && !allowedPaths.has(path)) {
+  if (!isCreate && !allowedPaths.has(path)) {
     throw errors.patchFailed(
       `The AI tried to modify "${path}", which was not part of the reviewed context. CodeWeave refused the change.`,
     );
   }
-  if (proposed.action === 'create' && originalFile) {
+  if (isCreate && (originalFile || existingPaths?.has(path))) {
     throw errors.patchFailed(`The AI tried to create "${path}", but that file already exists.`);
   }
-  if (proposed.action !== 'create' && !originalFile) {
+  if (!isCreate && !originalFile) {
     throw errors.patchFailed(`"${path}" does not exist on this branch, so it cannot be modified.`);
+  }
+  if (isCreate && !proposed.newContent?.trim()) {
+    throw errors.patchFailed(`The AI asked to create "${path}" but provided no content.`);
   }
 
   const original = originalFile?.content ?? '';

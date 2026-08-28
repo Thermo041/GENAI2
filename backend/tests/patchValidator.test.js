@@ -84,6 +84,36 @@ describe('validateFileChange', () => {
     expect(() => validateFileChange({ proposed: { path: 'src/payment.js', action: 'create', newContent: 'x' }, originalFile, allowedPaths })).toThrow(/already exists/);
   });
 
+  it('accepts creating a brand-new file outside the reviewed context', () => {
+    const result = validateFileChange({
+      proposed: { path: 'src/utils/format.js', action: 'create', newContent: 'export function format(v) {\n  return String(v);\n}\n', rationale: 'new helper' },
+      originalFile: undefined,
+      allowedPaths,
+      existingPaths: new Set(['src/payment.js']),
+    });
+    expect(result).toMatchObject({ path: 'src/utils/format.js', action: 'create', deletions: 0 });
+    expect(result.additions).toBeGreaterThan(0);
+    expect(result.originalContent).toBe('');
+    expect(result.diff).toContain('+export function format');
+  });
+
+  it('refuses creating a file that already exists in the repository', () => {
+    expect(() =>
+      validateFileChange({
+        proposed: { path: 'src/models/User.js', action: 'create', newContent: 'clobbered' },
+        originalFile: undefined,
+        allowedPaths,
+        existingPaths: new Set(['src/models/User.js']),
+      }),
+    ).toThrow(/already exists/);
+  });
+
+  it('refuses creating a file with no content', () => {
+    expect(() =>
+      validateFileChange({ proposed: { path: 'notes.txt', action: 'create', newContent: '   ' }, originalFile: undefined, allowedPaths }),
+    ).toThrow(/no content/);
+  });
+
   it('refuses suspiciously truncated rewrites', () => {
     expect(() =>
       validateFileChange({

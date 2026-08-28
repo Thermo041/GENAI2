@@ -3,7 +3,15 @@ import { z } from 'zod';
 import { requireAuth } from '../middleware/auth.js';
 import { validate } from '../middleware/validate.js';
 import { heavyAiLimiter, writeLimiter } from '../middleware/rateLimit.js';
-import { branchSchema, createRepositoryBranch, forkRepository, githubUser, openPullRequest, pullRequestSchema } from '../controllers/github.controller.js';
+import {
+  branchSchema,
+  createRepositoryBranch,
+  forkRepository,
+  getForkStatus,
+  githubUser,
+  openPullRequest,
+  pullRequestSchema,
+} from '../controllers/github.controller.js';
 import { listGithubRepositories } from '../controllers/repository.controller.js';
 import {
   getRepositoryPull,
@@ -24,6 +32,7 @@ router.get('/user', githubUser);
 router.get('/repositories', listGithubRepositories);
 
 // Write operations
+router.get('/:owner/:repo/fork', validate({ params: ownerRepo }), getForkStatus);
 router.post('/:owner/:repo/fork', writeLimiter, validate({ params: ownerRepo }), forkRepository);
 router.post('/:owner/:repo/branches', writeLimiter, validate({ params: ownerRepo, body: branchSchema }), createRepositoryBranch);
 router.post('/:owner/:repo/pull-request', writeLimiter, validate({ params: ownerRepo, body: pullRequestSchema }), openPullRequest);

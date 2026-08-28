@@ -28,7 +28,13 @@ export const analyzeRepository = asyncHandler(async (req, res) => {
     await doc.save();
   }
 
-  const view = await buildRepositoryView({ meta, doc, octokit });
+  const view = await buildRepositoryView({
+    meta,
+    doc,
+    octokit,
+    userId: req.user?._id,
+    userHasInstallation: (req.user?.installationIds?.length ?? 0) > 0,
+  });
   return ok(res, { repository: view });
 });
 
@@ -69,7 +75,13 @@ export const listGithubRepositories = asyncHandler(async (req, res) => {
 
 export const getRepositoryDetails = asyncHandler(async (req, res) => {
   const { octokit, meta, doc } = await resolveRepository(req, req.params.owner, req.params.repo, { withLanguages: true });
-  const view = await buildRepositoryView({ meta, doc, octokit });
+  const view = await buildRepositoryView({
+    meta,
+    doc,
+    octokit,
+    userId: req.user?._id,
+    userHasInstallation: (req.user?.installationIds?.length ?? 0) > 0,
+  });
   view.index.vectors = await vectorCount(doc._id);
   return ok(res, { repository: view });
 });

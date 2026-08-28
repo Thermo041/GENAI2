@@ -20,7 +20,7 @@ const EXAMPLES = [
 ];
 
 export default function ChangesTab() {
-  const { owner, repo, indexed, canWrite, startIndexing, isIndexing } = useRepository();
+  const { owner, repo, indexed, canWrite, startIndexing, isIndexing, repository } = useRepository();
   const { user } = useAuth();
   const [instruction, setInstruction] = useState('');
   const [generating, setGenerating] = useState(false);
@@ -202,7 +202,11 @@ export default function ChangesTab() {
         )}
       </section>
 
-      {!canWrite ? (
+      {!canWrite && repository?.access?.canFork === false ? (
+        <Alert variant="warning" title="CodeWeave cannot fork this repository for you">
+          {repository.access.forkNote}
+        </Alert>
+      ) : !canWrite ? (
         <Alert variant="info" title="Read-only repository">
           You can analyse, ask questions and generate changes. Accepting a change forks the repository under your account
           and opens the pull request upstream — CodeWeave never pushes to a repository you cannot write to.
@@ -215,6 +219,7 @@ export default function ChangesTab() {
         change={current}
         suggestions={suggestions}
         canWrite={canWrite}
+        access={repository?.access}
         viewerLogin={user?.login}
         onApplied={(result) => {
           setCurrent(result.change);

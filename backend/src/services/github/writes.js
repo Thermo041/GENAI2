@@ -91,7 +91,21 @@ export async function ensureFork(octokit, { owner, repo, viewerLogin, waitMs = 3
   const existing = await findExistingFork(octokit, { owner, repo, viewerLogin });
   if (existing) return { ...existing, created: false };
 
-  await withGithub({ resource: 'repository' }, () => octokit.rest.repos.createFork({ owner, repo }));
+  try {
+    await withGithub({ resource: 'repository' }, () => octokit.rest.repos.createFork({ owner, repo }));
+  } catch (err) {
+    // A GitHub App user token may only fork repositories the App installation
+    // covers. For someone else's repository that is impossible, so explain the
+    // one-click workaround instead of a bare 403.
+    if (['FORBIDDEN', 'NO_WRITE_ACCESS', 'NOT_FOUND', 'REPO_NOT_FOUND'].includes(err.code)) {
+      throw errors.forbidden(
+        `GitHub would not let CodeWeave fork ${owner}/${repo} for you: a GitHub App can only fork repositories it is installed on. ` +
+          `Fork it yourself on GitHub (one click at https://github.com/${owner}/${repo}/fork), then analyse ${viewerLogin}/${repo} — ` +
+          'CodeWeave detects an existing fork and will commit and open the pull request from it.',
+      );
+    }
+    throw err;
+  }
   logger.info({ owner, repo, viewerLogin }, 'Requested fork creation');
 
   const deadline = Date.now() + waitMs;
@@ -105,7 +119,7 @@ export async function ensureFork(octokit, { owner, repo, viewerLogin, waitMs = 3
   throw errors.upstream('github', 'GitHub is still creating your fork. Wait a few seconds and try again.');
 }
 
-async function findExistingFork(octokit, { owner, repo, viewerLogin }) {
+export async function findExistingFork(octokit, { owner, repo, viewerLogin }) {
   try {
     const { data } = await octokit.rest.repos.get({ owner: viewerLogin, repo });
     const parentMatches = data.parent && data.parent.full_name.toLowerCase() === `${owner}/${repo}`.toLowerCase();

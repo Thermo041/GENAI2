@@ -30,7 +30,8 @@ describe('prompt injection defence', () => {
   });
 
   it('forbids main-branch writes and invented paths in the change prompt', () => {
-    expect(CODE_CHANGE_SYSTEM_PROMPT).toMatch(/Never invent a path/);
+    expect(CODE_CHANGE_SYSTEM_PROMPT).toMatch(/Never modify a path you cannot see/);
+    expect(CODE_CHANGE_SYSTEM_PROMPT).toMatch(/never overwrite an existing path/);
     expect(CODE_CHANGE_SYSTEM_PROMPT).toMatch(/smallest change/);
     expect(CODE_CHANGE_SYSTEM_PROMPT).toMatch(/Never add secrets/);
   });

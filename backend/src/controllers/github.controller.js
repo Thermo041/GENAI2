@@ -4,7 +4,7 @@ import { errors } from '../utils/errors.js';
 import { assertBranchName, isSafeBranchName } from '../utils/repoIdentity.js';
 import { resolveRepository, assertWriteAccess } from '../services/repositoryAccess.js';
 import { getAuthenticatedUser, getBranchHead } from '../services/github/repositories.js';
-import { createBranch, ensureFork, syncForkWithUpstream, uniqueBranchName } from '../services/github/writes.js';
+import { createBranch, ensureFork, findExistingFork, syncForkWithUpstream, uniqueBranchName } from '../services/github/writes.js';
 import { createPullRequest } from '../services/github/pulls.js';
 import { octokitForUser } from '../services/github/client.js';
 
@@ -33,6 +33,22 @@ export const githubUser = asyncHandler(async (req, res) => {
       privateRepos: profile.total_private_repos ?? null,
       url: profile.html_url,
     },
+  });
+});
+
+/**
+ * GET /api/github/:owner/:repo/fork — does the signed-in user already have a
+ * fork? Lets the UI offer "fork it on GitHub, then continue" for repositories a
+ * GitHub App token is not allowed to fork itself.
+ */
+export const getForkStatus = asyncHandler(async (req, res) => {
+  const { octokit, meta } = await resolveRepository(req, req.params.owner, req.params.repo);
+  const fork = await findExistingFork(octokit, { owner: meta.owner, repo: meta.name, viewerLogin: req.user.login });
+  return ok(res, {
+    exists: Boolean(fork),
+    fork: fork || null,
+    upstream: meta.fullName,
+    forkUrl: `${meta.url}/fork`,
   });
 });
 

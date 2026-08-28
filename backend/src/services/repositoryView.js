@@ -1,6 +1,7 @@
 import { getBranchHead } from './github/repositories.js';
 import { countRepositoryVectors } from './qdrant/store.js';
 import { summarizeAccess } from './repositoryAccess.js';
+import { viewerCoversOwner, viewerInstallationAccounts } from './github/installation.js';
 import { getLatestJob, jobToStatus } from './indexing/jobs.js';
 
 /**
@@ -8,7 +9,7 @@ import { getLatestJob, jobToStatus } from './indexing/jobs.js';
  * GitHub-derived access mode + index state + staleness. Freshness is checked
  * against the live branch head so stale analysis is never presented silently.
  */
-export async function buildRepositoryView({ meta, doc, octokit, includeFreshness = true }) {
+export async function buildRepositoryView({ meta, doc, octokit, includeFreshness = true, userId = null, userHasInstallation = null }) {
   const branch = doc.indexedBranch || meta.defaultBranch;
   let freshness = { checked: false, stale: false, headSha: '', indexedSha: doc.lastIndexedCommitSha || '' };
 
@@ -29,6 +30,13 @@ export async function buildRepositoryView({ meta, doc, octokit, includeFreshness
     }
   }
 
+  // Only relevant when the user cannot push: a user token can only fork a
+  // repository its own installation covers, so check that before offering it.
+  let viewerCoversSource = true;
+  if (!meta.permissions.canWrite && userId) {
+    const accounts = await viewerInstallationAccounts(octokit, userId);
+    viewerCoversSource = viewerCoversOwner(accounts, meta.owner);
+  }
   const job = await getLatestJob(doc._id, 'full_index');
 
   return {
@@ -53,7 +61,7 @@ export async function buildRepositoryView({ meta, doc, octokit, includeFreshness
     topics: meta.topics,
     ownerAvatar: meta.ownerAvatar,
     pushedAt: meta.pushedAt,
-    access: { ...summarizeAccess(meta), permissions: meta.permissions },
+    access: { ...summarizeAccess(meta, { viewerCoversSource, userHasInstallation }), permissions: meta.permissions },
     index: {
       status: doc.indexingStatus,
       branch: doc.indexedBranch,

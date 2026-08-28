@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
-import { GitBranch, GitFork, GitPullRequest, ShieldAlert } from 'lucide-react';
-import { changeApi } from '../../services/endpoints.js';
+import { ExternalLink, GitBranch, GitFork, GitPullRequest, RefreshCw, ShieldAlert } from 'lucide-react';
+import { changeApi, githubApi } from '../../services/endpoints.js';
 import { Dialog, DialogBody, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogDescription } from '../ui/dialog.jsx';
 import { Button } from '../ui/button.jsx';
 import { Input, Label, Mono, Textarea, Switch, Badge } from '../ui/primitives.jsx';
@@ -12,7 +12,7 @@ import { Alert } from '../ui/feedback.jsx';
  * happens: target repository (fork or origin), branch name, commit message and
  * pull request. The default branch is never a commit target.
  */
-export function ApplyDialog({ open, onOpenChange, change, suggestions, canWrite, viewerLogin, onApplied }) {
+export function ApplyDialog({ open, onOpenChange, change, suggestions, canWrite, viewerLogin, access, onApplied }) {
   const [branchName, setBranchName] = useState('');
   const [commitMessage, setCommitMessage] = useState('');
   const [prTitle, setPrTitle] = useState('');
@@ -20,6 +20,8 @@ export function ApplyDialog({ open, onOpenChange, change, suggestions, canWrite,
   const [createPullRequest, setCreatePullRequest] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState(null);
+  const [forkReady, setForkReady] = useState(false);
+  const [checkingFork, setCheckingFork] = useState(false);
 
   useEffect(() => {
     if (!open || !change) return;
@@ -29,6 +31,7 @@ export function ApplyDialog({ open, onOpenChange, change, suggestions, canWrite,
     setPrBody(suggestions?.prBody || '');
     setCreatePullRequest(true);
     setError(null);
+    setForkReady(false);
   }, [open, change, suggestions]);
 
   if (!change) return null;
@@ -77,6 +80,50 @@ export function ApplyDialog({ open, onOpenChange, change, suggestions, canWrite,
         </DialogHeader>
 
         <DialogBody className="space-y-4">
+          {viaFork && access?.canFork === false && !forkReady ? (
+            <Alert
+              variant="warning"
+              title="Fork it on GitHub first — then CodeWeave takes over"
+              icon={GitFork}
+              actions={
+                <>
+                  <Button size="xs" asChild>
+                    <a href={`https://github.com/${change.baseOwner}/${change.baseRepo}/fork`} target="_blank" rel="noreferrer noopener">
+                      Fork on GitHub
+                      <ExternalLink aria-hidden="true" />
+                    </a>
+                  </Button>
+                  <Button
+                    size="xs"
+                    variant="outline"
+                    loading={checkingFork}
+                    onClick={async () => {
+                      setCheckingFork(true);
+                      try {
+                        const status = await githubApi.forkStatus(change.baseOwner, change.baseRepo);
+                        if (status.exists) {
+                          setForkReady(true);
+                          toast.success(`Found your fork: ${status.fork.fullName}`);
+                        } else {
+                          toast.info('No fork found yet — create it on GitHub, then check again.');
+                        }
+                      } catch (err) {
+                        toast.error(err.message);
+                      } finally {
+                        setCheckingFork(false);
+                      }
+                    }}
+                  >
+                    <RefreshCw aria-hidden="true" />
+                    I've forked it — check again
+                  </Button>
+                </>
+              }
+            >
+              {access.forkNote}
+            </Alert>
+          ) : null}
+
           {viaFork ? (
             <Alert variant="warning" title="You don't have write access to this repository" icon={GitFork}>
               CodeWeave will use a fork under your GitHub account (<Mono>{targetRepo}</Mono>), branch there, commit, and
@@ -173,7 +220,7 @@ export function ApplyDialog({ open, onOpenChange, change, suggestions, canWrite,
           <Button variant="outline" onClick={() => onOpenChange(false)} disabled={submitting}>
             Cancel
           </Button>
-          <Button onClick={submit} loading={submitting}>
+          <Button onClick={submit} loading={submitting} disabled={viaFork && access?.canFork === false && !forkReady}>
             <GitBranch aria-hidden="true" />
             {viaFork ? 'Fork, commit' : 'Create branch, commit'}
             {createPullRequest ? ' & open PR' : ''}

@@ -2,6 +2,7 @@ import { errors } from '../../utils/errors.js';
 import { logger } from '../../utils/logger.js';
 import { CodeChange } from '../../models/CodeChange.js';
 import { CodeEdge } from '../../models/CodeEdge.js';
+import { CodeFile } from '../../models/CodeFile.js';
 import { getFileContent } from '../github/contents.js';
 import { getBranchHead } from '../github/repositories.js';
 import { retrieveContext } from '../ai/retrieval.js';
@@ -96,6 +97,9 @@ export async function generateCodeChange({ repositoryDoc, userId, octokit, meta,
     .limit(24)
     .lean();
 
+  const indexedPaths = await CodeFile.find({ repositoryId: repositoryDoc._id }).select('filePath').lean();
+  const repositoryPaths = indexedPaths.map((f) => f.filePath).slice(0, 120);
+
   const windowedFiles = files.filter((f) => f.windowed).map((f) => f.path);
   const extraContextRoom = Math.max(0, contentBudget - 600);
   const extraChunks = extraContextRoom > 800
@@ -104,9 +108,11 @@ export async function generateCodeChange({ repositoryDoc, userId, octokit, meta,
 
   const context = wrapRepositoryContext([
     `REPOSITORY: ${repositoryDoc.fullName} (branch ${baseBranch}, commit ${head.sha.slice(0, 7)})`,
-    `EDITABLE FILES — you may only modify these paths:\n${files
+    `EDITABLE FILES — you may modify these paths:\n${files
       .map((f) => `- ${f.path} (${f.lines} lines${f.windowed ? ', shown as excerpts' : ''})`)
       .join('\n')}`,
+    `NEW FILES — you may also create files that do not exist yet, with "action": "create" and full "newContent".`,
+    `EXISTING PATHS IN THIS REPOSITORY (so a new file lands in the right place and never collides):\n${repositoryPaths.join(', ')}`,
     ...files.map((file) => `${file.windowed ? 'EXCERPTS OF' : 'FULL CONTENT OF'} ${file.path}:\n\`\`\`\n${file.rendered}\n\`\`\``),
     importers.length
       ? `CALLERS / IMPORTERS OF THESE FILES (AST graph) — consider them before changing a signature:\n${importers
@@ -140,11 +146,17 @@ export async function generateCodeChange({ repositoryDoc, userId, octokit, meta,
   });
 
   const allowedPaths = new Set(files.map((f) => f.path));
+  const existingPaths = new Set(repositoryPaths);
   const byPath = new Map(files.map((f) => [f.path, f]));
   const validated = [];
 
   for (const proposed of data.files) {
-    const result = validateFileChange({ proposed, originalFile: byPath.get(proposed.path), allowedPaths });
+    const result = validateFileChange({
+      proposed,
+      originalFile: byPath.get(proposed.path),
+      allowedPaths,
+      existingPaths,
+    });
     if (result) validated.push(result);
   }
 

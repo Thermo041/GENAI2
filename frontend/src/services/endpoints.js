@@ -48,6 +48,7 @@ export const changeApi = {
 
 export const githubApi = {
   user: () => api.get('/github/user'),
+  forkStatus: (owner, repo) => api.get(`/github/${owner}/${repo}/fork`),
   fork: (owner, repo) => api.post(`/github/${owner}/${repo}/fork`),
   createBranch: (owner, repo, payload) => api.post(`/github/${owner}/${repo}/branches`, payload),
   openPullRequest: (owner, repo, payload) => api.post(`/github/${owner}/${repo}/pull-request`, payload),

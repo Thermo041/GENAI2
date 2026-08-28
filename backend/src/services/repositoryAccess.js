@@ -90,13 +90,40 @@ export function assertWriteAccess(meta) {
   return true;
 }
 
-export function summarizeAccess(meta) {
+/**
+ * What the UI is allowed to offer for this repository.
+ *
+ * `canFork` is deliberately strict: a GitHub App user token can only fork a
+ * repository the App is installed on, and CodeWeave then needs the App on the
+ * user's own account to commit to the fork. When either is missing we say so
+ * up front instead of failing when the user clicks Accept.
+ */
+export function summarizeAccess(meta, { viewerCoversSource = null, userHasInstallation = null } = {}) {
+  const canWrite = meta.permissions.canWrite;
+  const forkable = !meta.isPrivate;
+  const canFork = canWrite ? true : forkable && viewerCoversSource !== false && userHasInstallation !== false;
+
+  let forkNote = null;
+  if (!canWrite) {
+    if (!forkable) {
+      forkNote = 'Private repositories cannot be forked through CodeWeave.';
+    } else if (userHasInstallation === false) {
+      forkNote = 'Install the CodeWeave GitHub App on your account so it can commit to your fork.';
+    } else if (viewerCoversSource === false) {
+      forkNote =
+        `GitHub only lets CodeWeave fork repositories your own App installation covers, and yours does not include ${meta.owner}. ` +
+        `Fork ${meta.fullName} yourself on GitHub (one click), then analyse your copy — CodeWeave detects the existing fork ` +
+        'and will commit and open the pull request from it.';
+    }
+  }
+
   return {
     role: meta.permissions.role,
-    canWrite: meta.permissions.canWrite,
-    canFork: !meta.isPrivate || meta.permissions.canWrite,
-    mode: meta.permissions.canWrite ? 'read_write' : 'read_only',
-    reason: meta.permissions.canWrite
+    canWrite,
+    canFork,
+    forkNote,
+    mode: canWrite ? 'read_write' : 'read_only',
+    reason: canWrite
       ? 'GitHub reports push access for your account.'
       : 'GitHub reports read-only access for your account.',
   };

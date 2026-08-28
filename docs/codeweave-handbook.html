@@ -1,0 +1,1032 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CodeWeave Handbook</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&family=IBM+Plex+Mono:wght@400;500&display=swap">
+
+<style>
+  :root {
+    --paper: #f6f6fa;
+    --card: #ffffff;
+    --ink: #16192b;
+    --ink-soft: #545876;
+    --ink-faint: #8a8da6;
+    --rule: #e0e0ec;
+    --rule-soft: #ecedf4;
+    --accent: #4b46d6;
+    --accent-soft: #ecebfc;
+    --accent-ink: #3b37ac;
+    --ok: #1c7a52;
+    --ok-soft: #e2f3ea;
+    --warn: #93600f;
+    --warn-soft: #fbf0da;
+    --stop: #ab2531;
+    --stop-soft: #fbe6e8;
+    --shadow: 0 1px 2px rgb(22 25 43 / 0.05), 0 8px 24px -18px rgb(22 25 43 / 0.35);
+    --display: "Bricolage Grotesque", ui-sans-serif, system-ui, sans-serif;
+    --body: "Source Serif 4", Georgia, "Times New Roman", serif;
+    --mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --paper: #0f1120;
+      --card: #171a2c;
+      --ink: #e9eaf4;
+      --ink-soft: #a6a9c2;
+      --ink-faint: #767a95;
+      --rule: #282c42;
+      --rule-soft: #1f2335;
+      --accent: #9a97fa;
+      --accent-soft: #23234a;
+      --accent-ink: #b6b3ff;
+      --ok: #5fc794;
+      --ok-soft: #14301f;
+      --warn: #e0a94a;
+      --warn-soft: #33270f;
+      --stop: #f08492;
+      --stop-soft: #351319;
+      --shadow: 0 1px 2px rgb(0 0 0 / 0.4), 0 10px 30px -20px rgb(0 0 0 / 0.9);
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --paper: #0f1120;
+    --card: #171a2c;
+    --ink: #e9eaf4;
+    --ink-soft: #a6a9c2;
+    --ink-faint: #767a95;
+    --rule: #282c42;
+    --rule-soft: #1f2335;
+    --accent: #9a97fa;
+    --accent-soft: #23234a;
+    --accent-ink: #b6b3ff;
+    --ok: #5fc794;
+    --ok-soft: #14301f;
+    --warn: #e0a94a;
+    --warn-soft: #33270f;
+    --stop: #f08492;
+    --stop-soft: #351319;
+    --shadow: 0 1px 2px rgb(0 0 0 / 0.4), 0 10px 30px -20px rgb(0 0 0 / 0.9);
+  }
+</style>
+<style>
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--body);
+    font-size: 17px;
+    line-height: 1.65;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .wrap { max-width: 1080px; margin: 0 auto; padding: 0 24px; }
+  .col { max-width: 66ch; }
+
+  h1, h2, h3, h4 { font-family: var(--display); font-weight: 700; text-wrap: balance; margin: 0; line-height: 1.15; }
+  h1 { font-size: clamp(2.2rem, 5vw, 3.4rem); letter-spacing: -0.02em; }
+  h2 { font-size: clamp(1.5rem, 3vw, 2rem); letter-spacing: -0.015em; }
+  h3 { font-size: 1.12rem; }
+  h4 { font-size: 0.95rem; font-weight: 500; }
+  p { margin: 0; }
+
+  .eyebrow {
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    color: var(--ink-faint);
+  }
+
+  code, .mono { font-family: var(--mono); font-size: 0.86em; }
+  code {
+    background: var(--rule-soft);
+    padding: 0.12em 0.4em;
+    border-radius: 3px;
+    color: var(--accent-ink);
+  }
+
+  a { color: var(--accent-ink); text-decoration-thickness: 1px; text-underline-offset: 2px; }
+  a:focus-visible, button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 2px; }
+
+  header.top {
+    border-bottom: 1px solid var(--rule);
+    background: var(--card);
+  }
+  header.top .wrap { display: flex; flex-direction: column; gap: 22px; padding-top: 54px; padding-bottom: 40px; }
+  .lede { font-size: 1.12rem; color: var(--ink-soft); max-width: 60ch; }
+  .lede strong { color: var(--ink); font-weight: 600; }
+</style>
+<style>
+  nav.jump {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background: color-mix(in srgb, var(--paper) 92%, transparent);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--rule);
+  }
+  nav.jump ol {
+    display: flex; gap: 4px; margin: 0; padding: 0 24px; list-style: none;
+    max-width: 1080px; margin-inline: auto; overflow-x: auto;
+  }
+  nav.jump a {
+    display: block; padding: 11px 10px; font-family: var(--mono); font-size: 0.74rem;
+    letter-spacing: 0.04em; text-transform: uppercase; color: var(--ink-soft); text-decoration: none;
+    white-space: nowrap; border-bottom: 2px solid transparent;
+  }
+  nav.jump a:hover { color: var(--ink); border-bottom-color: var(--accent); }
+
+  section { padding: 56px 0; border-bottom: 1px solid var(--rule); }
+  .section-head { display: flex; flex-direction: column; gap: 10px; margin-bottom: 32px; }
+  .section-head p { color: var(--ink-soft); max-width: 62ch; }
+
+  .grid { display: grid; gap: 18px; }
+  .g2 { grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); }
+  .g3 { grid-template-columns: repeat(auto-fit, minmax(215px, 1fr)); }
+
+  .card {
+    background: var(--card);
+    border: 1px solid var(--rule);
+    border-radius: 4px;
+    padding: 20px;
+    box-shadow: var(--shadow);
+    display: flex; flex-direction: column; gap: 8px;
+  }
+  .card h3 + p, .card h4 + p { color: var(--ink-soft); font-size: 0.95rem; }
+  .card .mono-line { font-family: var(--mono); font-size: 0.78rem; color: var(--ink-faint); }
+
+  .term { display: flex; flex-direction: column; gap: 6px; padding: 16px 0; border-top: 1px solid var(--rule-soft); }
+  .term:first-child { border-top: 0; }
+  .term dt { font-family: var(--display); font-weight: 700; font-size: 1rem; }
+  .term dd { margin: 0; color: var(--ink-soft); font-size: 0.96rem; }
+  .term .cw { color: var(--ink); }
+  .term .cw::before {
+    content: "In CodeWeave";
+    font-family: var(--mono); font-size: 0.66rem; letter-spacing: 0.12em; text-transform: uppercase;
+    color: var(--accent-ink); display: block; margin-bottom: 2px;
+  }
+</style>
+<style>
+  .chip {
+    display: inline-flex; align-items: center; gap: 5px;
+    font-family: var(--mono); font-size: 0.7rem; letter-spacing: 0.03em;
+    padding: 3px 7px; border-radius: 3px; border: 1px solid;
+    white-space: nowrap;
+  }
+  .chip-ok { color: var(--ok); background: var(--ok-soft); border-color: color-mix(in srgb, var(--ok) 35%, transparent); }
+  .chip-warn { color: var(--warn); background: var(--warn-soft); border-color: color-mix(in srgb, var(--warn) 35%, transparent); }
+  .chip-stop { color: var(--stop); background: var(--stop-soft); border-color: color-mix(in srgb, var(--stop) 35%, transparent); }
+  .chip-plain { color: var(--ink-soft); background: var(--rule-soft); border-color: var(--rule); }
+  .chip-accent { color: var(--accent-ink); background: var(--accent-soft); border-color: color-mix(in srgb, var(--accent) 35%, transparent); }
+
+  /* Numbered journey: the order is real, so it is numbered. */
+  ol.steps { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
+  ol.steps > li {
+    display: grid; grid-template-columns: 56px 1fr; gap: 0 20px;
+    padding: 26px 0; border-top: 1px solid var(--rule);
+  }
+  ol.steps > li:first-child { border-top: 0; padding-top: 0; }
+  .step-n {
+    font-family: var(--mono); font-size: 0.8rem; color: var(--accent-ink);
+    padding-top: 4px; font-variant-numeric: tabular-nums;
+  }
+  .step-body { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+  .step-body > p { color: var(--ink-soft); max-width: 62ch; }
+  .step-body > p strong { color: var(--ink); font-weight: 600; }
+
+  .btnrow { display: flex; flex-wrap: wrap; gap: 8px; }
+  .btn {
+    font-family: var(--display); font-size: 0.8rem; font-weight: 500;
+    padding: 5px 11px; border-radius: 4px; border: 1px solid var(--rule);
+    background: var(--rule-soft); color: var(--ink);
+  }
+  .btn-primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+  :root[data-theme="dark"] .btn-primary { color: #14162a; }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .btn-primary { color: #14162a; } }
+
+  .note {
+    border-left: 2px solid var(--accent);
+    background: var(--accent-soft);
+    padding: 12px 16px; border-radius: 0 4px 4px 0;
+    font-size: 0.95rem; color: var(--ink);
+  }
+  .note.warn { border-left-color: var(--warn); background: var(--warn-soft); }
+  .note strong { font-weight: 600; }
+</style>
+<style>
+  .tablewrap { overflow-x: auto; border: 1px solid var(--rule); border-radius: 4px; background: var(--card); }
+  table { border-collapse: collapse; width: 100%; font-size: 0.92rem; }
+  th, td { text-align: left; padding: 11px 14px; border-bottom: 1px solid var(--rule-soft); vertical-align: top; }
+  thead th {
+    font-family: var(--mono); font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.1em;
+    color: var(--ink-faint); background: var(--rule-soft); border-bottom: 1px solid var(--rule);
+    position: sticky; top: 0;
+  }
+  tbody tr:last-child td { border-bottom: 0; }
+  td .mono { color: var(--ink-soft); }
+  td strong { font-weight: 600; }
+
+  .diff { font-family: var(--mono); font-size: 0.78rem; line-height: 1.6; margin: 0; overflow-x: auto; }
+  .diff div { padding: 0 10px; white-space: pre; }
+  .diff .add { background: var(--ok-soft); color: var(--ok); }
+  .diff .del { background: var(--stop-soft); color: var(--stop); }
+  .diff .meta { color: var(--accent-ink); }
+  .diff .ctx { color: var(--ink-faint); }
+
+  .flow { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; font-family: var(--mono); font-size: 0.76rem; }
+  .flow span { padding: 5px 9px; border: 1px solid var(--rule); border-radius: 3px; background: var(--card); }
+  .flow .arrow { border: 0; background: none; color: var(--ink-faint); padding: 0 2px; }
+  .flow .hl { border-color: color-mix(in srgb, var(--accent) 45%, transparent); background: var(--accent-soft); color: var(--accent-ink); }
+
+  footer { padding: 40px 0 64px; color: var(--ink-faint); font-size: 0.9rem; }
+  footer .wrap { display: flex; flex-direction: column; gap: 6px; }
+
+  ul.tight { margin: 0; padding-left: 1.1em; color: var(--ink-soft); font-size: 0.95rem; }
+  ul.tight li + li { margin-top: 5px; }
+  ul.tight strong { color: var(--ink); font-weight: 600; }
+
+  @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
+  @media (max-width: 640px) {
+    body { font-size: 16px; }
+    ol.steps > li { grid-template-columns: 1fr; gap: 8px; }
+    .step-n { padding-top: 0; }
+    section { padding: 40px 0; }
+  }
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="wrap">
+    <p class="eyebrow">CodeWeave · handbook</p>
+    <h1>Every screen, every button, and what GitHub lets you do</h1>
+    <p class="lede">
+      CodeWeave reads one GitHub repository at a time, answers questions from its real code, works out what a change
+      would break, and can open a pull request for you. What it will let you <strong>do</strong> depends entirely on what
+      GitHub says you can do to that repository — so this guide runs the whole tour twice: once for a repository you own,
+      once for someone else's.
+    </p>
+  </div>
+</header>
+
+<nav class="jump" aria-label="Sections">
+  <ol>
+    <li><a href="#primer">Six words first</a></li>
+    <li><a href="#access">Who can do what</a></li>
+    <li><a href="#tour">The tour</a></li>
+    <li><a href="#tracks">Your repo vs theirs</a></li>
+    <li><a href="#github">What lands on GitHub</a></li>
+    <li><a href="#auto">Runs by itself</a></li>
+    <li><a href="#buttons">Button reference</a></li>
+    <li><a href="#stuck">If something looks wrong</a></li>
+  </ol>
+</nav>
+
+<main>
+<section id="primer">
+  <div class="wrap col">
+    <div class="section-head">
+      <p class="eyebrow">Vocabulary</p>
+      <h2>Six GitHub words, then nothing else is confusing</h2>
+      <p>Every button in CodeWeave maps onto one of these. If you know these six, you know what the app is doing.</p>
+    </div>
+    <dl>
+      <div class="term">
+        <dt>Repository (repo)</dt>
+        <dd>A project's folder of code, its history, and who is allowed to touch it.</dd>
+        <dd class="cw">The thing you point CodeWeave at. One repo is analysed at a time.</dd>
+      </div>
+      <div class="term">
+        <dt>Branch</dt>
+        <dd>A parallel copy of the code you can change without touching the main version. <code>main</code> is the default branch — the one everyone treats as real.</dd>
+        <dd class="cw">Every AI change gets its own new branch, e.g. <code>codeweave/reject-negative-credits-0bziwh</code>. <strong>CodeWeave never writes to <code>main</code> directly.</strong></dd>
+      </div>
+      <div class="term">
+        <dt>Commit</dt>
+        <dd>One saved step in the history: "these files changed, for this reason." Identified by a hash like <code>756b975</code>.</dd>
+        <dd class="cw">All files in one accepted change are saved as a single commit, with a message you can edit first.</dd>
+      </div>
+      <div class="term">
+        <dt>Pull request (PR)</dt>
+        <dd>A proposal: "please merge my branch into yours." It shows the diff and lets people comment before anything is merged.</dd>
+        <dd class="cw">The end of the change flow. CodeWeave opens it; a human merges it. It never merges anything.</dd>
+      </div>
+      <div class="term">
+        <dt>Fork</dt>
+        <dd>Your own copy of someone else's repository, under your account. You can commit to your copy freely, then send a pull request back to theirs.</dd>
+        <dd class="cw">How you propose changes to a repo you don't own.</dd>
+      </div>
+      <div class="term">
+        <dt>Webhook</dt>
+        <dd>GitHub phoning an app when something happens — a push, a new pull request.</dd>
+        <dd class="cw">Keeps the index fresh and reviews new pull requests without you asking.</dd>
+      </div>
+    </dl>
+  </div>
+</section>
+<section id="access">
+  <div class="wrap">
+    <div class="section-head col">
+      <p class="eyebrow">Permissions</p>
+      <h2>CodeWeave can only ever do what your GitHub account can do</h2>
+      <p>
+        There is no CodeWeave account and no password. You authorize the CodeWeave GitHub App, GitHub hands the server a
+        short-lived token that belongs to <em>you</em>, and every read and write happens as you. So the badge at the top of a
+        repository is not CodeWeave's opinion — it is GitHub's answer about your account.
+      </p>
+    </div>
+
+    <div class="grid g3">
+      <div class="card">
+        <span class="chip chip-ok">Read &amp; write</span>
+        <p>GitHub reports push access. Changes go straight into a new branch on this repository, then a pull request.</p>
+        <p class="mono-line">your own repos · repos you collaborate on</p>
+      </div>
+      <div class="card">
+        <span class="chip chip-warn">Read only</span>
+        <p>You can analyse, ask, and generate changes. To propose one, it goes through a fork under your account.</p>
+        <p class="mono-line">public repos owned by other people</p>
+      </div>
+      <div class="card">
+        <span class="chip chip-stop">No access</span>
+        <p>A private repository your account can't see is refused outright — no metadata, no file names.</p>
+        <p class="mono-line">someone else's private repo</p>
+      </div>
+    </div>
+
+    <div class="note" style="margin-top: 22px;">
+      <strong>The App installation matters too.</strong> Installing CodeWeave on an account is what lets it write there.
+      Installations are per-account and not shared: an installation on <code>alice</code> gives no power over
+      <code>bob</code>'s repositories, even if the same person owns both accounts. This is why the fork step sometimes has
+      to happen on GitHub — see <a href="#tracks">Your repo vs theirs</a>.
+    </div>
+  </div>
+</section>
+
+<section id="tour">
+  <div class="wrap">
+    <div class="section-head col">
+      <p class="eyebrow">The tour · in order</p>
+      <h2>From signing in to a pull request</h2>
+      <p>These steps are a real sequence — each one depends on the one before it, which is why they're numbered.</p>
+    </div>
+
+    <ol class="steps">
+      <li>
+        <div class="step-n">01</div>
+        <div class="step-body">
+          <h3>Connect GitHub</h3>
+          <p>
+            The landing page has two buttons. <strong>Connect GitHub</strong> starts the sign-in;
+            <strong>Analyze public repository</strong> goes to the same place, because even public analysis needs a GitHub
+            identity to keep API limits workable.
+          </p>
+          <div class="btnrow"><span class="btn btn-primary">Connect GitHub</span><span class="btn">Analyze public repository</span></div>
+          <p>
+            GitHub asks you to authorize, then drops you on the dashboard. There is <strong>no signup form</strong> — your
+            GitHub identity <em>is</em> the account. Sign out from the avatar menu, top right.
+          </p>
+        </div>
+      </li>
+      <li>
+        <div class="step-n">02</div>
+        <div class="step-body">
+          <h3>Install the app on the accounts you'll work in</h3>
+          <p>
+            If the top bar shows <strong>Install app</strong>, CodeWeave has no installation on your account yet. Install it
+            and choose <em>All repositories</em> for the account whose code you want to change. Without this, private repos
+            stay invisible and nothing can be written.
+          </p>
+          <div class="btnrow"><span class="btn">Install app</span></div>
+        </div>
+      </li>
+      <li>
+        <div class="step-n">03</div>
+        <div class="step-body">
+          <h3>Dashboard — pick or paste a repository</h3>
+          <p>
+            Four counters (repositories, indexed, AI changes, pull requests), a paste box, then a card per repository you've
+            analysed. <strong>Repositories</strong> in the sidebar lists everything your GitHub account can reach, with
+            filters for indexed / writable / private.
+          </p>
+          <div class="flow">
+            <span class="hl">owner/repo</span><span class="arrow">or</span>
+            <span class="hl">https://github.com/owner/repo</span><span class="arrow">→</span><span>Analyze</span>
+          </div>
+          <p>Each card carries the two facts that decide everything: the access badge and the index state.</p>
+        </div>
+      </li>
+      <li>
+        <div class="step-n">04</div>
+        <div class="step-body">
+          <h3>Index it — this is the step that makes the AI useful</h3>
+          <p>
+            Nothing intelligent works before this. <strong>Index repository</strong> reads the file list, throws away noise
+            (dependencies, build output, images, lock files), parses the real source with a JavaScript AST parser, cuts it
+            into chunks around functions and classes, turns each chunk into a vector, and records how files import and call
+            each other.
+          </p>
+          <div class="flow">
+            <span>file list</span><span class="arrow">→</span><span>filter</span><span class="arrow">→</span>
+            <span>parse</span><span class="arrow">→</span><span>chunk</span><span class="arrow">→</span>
+            <span class="hl">vectors</span><span class="arrow">+</span><span class="hl">relationship graph</span>
+          </div>
+          <p>
+            The counters that climb are real: files discovered, files processed, chunks, embeddings, symbols.
+            <strong>Re-index</strong> re-runs it. A banner appears when new commits have landed since the last index —
+            answers say so rather than pretending to be current.
+          </p>
+        </div>
+      </li>
+    </ol>
+  </div>
+</section>
+<section id="tour2">
+  <div class="wrap">
+    <div class="section-head col">
+      <p class="eyebrow">The tour · the seven tabs</p>
+      <h2>Inside a repository</h2>
+      <p>Once a repository is open, everything lives in seven tabs. The first four only read; the last three can write.</p>
+    </div>
+
+    <ol class="steps">
+      <li>
+        <div class="step-n">05</div>
+        <div class="step-body">
+          <h3>Overview — what is this project?</h3>
+          <p>
+            Counters come straight from the index: files, lines, symbols, graph edges. Below them, the languages,
+            the detected stack read out of <code>package.json</code> and friends, entry points, key directories, and
+            the HTTP routes the parser actually found. The written summary is the only AI part — the numbers are facts.
+          </p>
+          <div class="btnrow"><span class="btn">Regenerate</span></div>
+        </div>
+      </li>
+      <li>
+        <div class="step-n">06</div>
+        <div class="step-body">
+          <h3>Files — read the code, with the assistant beside it</h3>
+          <p>
+            Explorer on the left (a dot marks an indexed file), read-only editor in the middle, assistant on the right.
+            The panel toggle hides the assistant; the arrow opens the file on GitHub. Nothing here edits code.
+          </p>
+        </div>
+      </li>
+      <li>
+        <div class="step-n">07</div>
+        <div class="step-body">
+          <h3>AI Assistant — answers that cite the code</h3>
+          <p>
+            Ask in plain English: <em>"How does creating a user work, from the route down to the database?"</em> The answer is
+            built only from retrieved chunks of this repository, and every claim carries a source like
+            <code>src/services/user.service.js:4-9</code>. <strong>Click a source and the file opens at that line</strong>, highlighted.
+          </p>
+          <p>
+            If retrieval finds nothing relevant it says so instead of inventing an answer — and tells you how much of the
+            repository is actually indexed.
+          </p>
+        </div>
+      </li>
+      <li>
+        <div class="step-n">08</div>
+        <div class="step-body">
+          <h3>Impact — what breaks if I change this?</h3>
+          <p>
+            Search a function or class name, pick it, and CodeWeave walks the stored relationship graph: who calls it, which
+            modules import it, which HTTP routes end up exposing it, and which tests touch it. Severity comes from that
+            graph, not from the model's mood.
+          </p>
+          <div class="btnrow">
+            <span class="chip chip-stop">HIGH · calls it directly</span>
+            <span class="chip chip-warn">MEDIUM · imports the module</span>
+            <span class="chip chip-plain">LOW · related code</span>
+          </div>
+          <p>"No test file references this symbol" is stated plainly when it's true — that's often the useful part.</p>
+        </div>
+      </li>
+      <li>
+        <div class="step-n">09</div>
+        <div class="step-body">
+          <h3>Changes — describe it, read the diff, then decide</h3>
+          <p>
+            Type what you want in plain English. CodeWeave retrieves the relevant files, asks for the smallest patch that
+            does the job, then <strong>checks the patch against the current commit before showing it to you</strong>. It can
+            edit existing files and create new ones.
+          </p>
+          <pre class="diff"><div class="meta">@@ src/services/user.service.js</div><div class="ctx">  async function addCredits(id, amount) {</div><div class="add">+   if (amount &lt;= 0) throw new Error('Credit amount must be positive');</div><div class="ctx">    const user = await getUserById(id);</div></pre>
+          <p>
+            <strong>Reject</strong> discards it — nothing was ever on GitHub. <strong>Accept change</strong> opens a form where you
+            can edit the branch name, commit message, PR title and description, and switch the pull request off if you only
+            want the commit.
+          </p>
+          <div class="btnrow"><span class="btn">Reject</span><span class="btn btn-primary">Accept change</span></div>
+          <p>Every proposal is kept in <strong>Change history</strong> below, and in <strong>AI Changes</strong> in the sidebar.</p>
+        </div>
+      </li>
+      <li>
+        <div class="step-n">10</div>
+        <div class="step-body">
+          <h3>Architecture — the shape of the codebase</h3>
+          <p>
+            A map of directories drawn from real import edges. Modules nothing imports sit on the left (entry points),
+            modules that import nothing internal sit on the right (leaves), and a box outlined in the accent colour exposes
+            HTTP routes. Below it, the strongest dependencies ranked by number of imports.
+          </p>
+        </div>
+      </li>
+      <li>
+        <div class="step-n">11</div>
+        <div class="step-body">
+          <h3>Pull Requests — read them, and have them reviewed</h3>
+          <p>
+            Open / closed / all, with a badge on any PR that already has an AI review. Open one to get the description,
+            commits, per-file diffs, and <strong>Run AI review</strong>.
+          </p>
+          <p>
+            The review reads the diff <em>plus</em> the current file contents, the dependants from the graph, and the test
+            files. Findings are labelled by confidence — <span class="chip chip-stop">CONFIRMED</span>
+            <span class="chip chip-warn">LIKELY</span> <span class="chip chip-plain">POSSIBLE</span> — so you can tell a
+            certainty from a guess. <strong>Publish to GitHub</strong> posts it as a comment. It never approves or rejects for you.
+          </p>
+          <div class="btnrow"><span class="btn btn-primary">Run AI review</span><span class="btn">Publish to GitHub</span></div>
+        </div>
+      </li>
+    </ol>
+  </div>
+</section>
+<section id="tracks">
+  <div class="wrap">
+    <div class="section-head col">
+      <p class="eyebrow">The fork in the road</p>
+      <h2>Your repository vs someone else's</h2>
+      <p>Reading is identical either way. Only the moment you press <strong>Accept change</strong> differs.</p>
+    </div>
+
+    <div class="grid g2">
+      <div class="card">
+        <span class="chip chip-ok">Read &amp; write</span>
+        <h3>A repository you can push to</h3>
+        <div class="flow">
+          <span>Accept</span><span class="arrow">→</span><span class="hl">new branch</span><span class="arrow">→</span>
+          <span>commit</span><span class="arrow">→</span><span class="hl">pull request</span>
+        </div>
+        <p>
+          One click and it's done. The branch is created from the exact commit the AI reviewed, the files land in one commit,
+          and the pull request targets your default branch — which is never written to directly.
+        </p>
+        <p class="mono-line">example: Thermo041/VedaAI</p>
+      </div>
+
+      <div class="card">
+        <span class="chip chip-warn">Read only</span>
+        <h3>A repository owned by someone else</h3>
+        <div class="flow">
+          <span>Accept</span><span class="arrow">→</span><span class="hl">your fork</span><span class="arrow">→</span>
+          <span>branch</span><span class="arrow">→</span><span>commit</span><span class="arrow">→</span>
+          <span class="hl">PR upstream</span>
+        </div>
+        <p>
+          Nothing is ever pushed to their repository. The commit goes to your fork; the pull request goes to them, exactly
+          as if you had done it by hand.
+        </p>
+        <p class="mono-line">example: hagopj13/node-express-boilerplate</p>
+      </div>
+    </div>
+
+    <div class="note warn" style="margin-top: 22px;">
+      <strong>The one manual click, and why it exists.</strong> GitHub only lets an app create a fork of a repository your own
+      installation covers — which never includes a stranger's account. So for a third-party repo, CodeWeave shows
+      <strong>Fork on GitHub</strong> (one click there), then <strong>I've forked it — check again</strong>. From that point it is
+      automatic again: it finds your fork, branches from the reviewed upstream commit, commits, and opens the pull request.
+      Nothing about this is a workaround for a missing feature — no GitHub App can do it any other way.
+    </div>
+
+    <div class="tablewrap" style="margin-top: 22px;">
+      <table>
+        <thead>
+          <tr><th>What you want to do</th><th>Your own repo</th><th>Someone else's public repo</th><th>Private, no access</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><strong>Open &amp; browse files</strong></td><td>yes</td><td>yes</td><td>refused</td></tr>
+          <tr><td><strong>Index it</strong></td><td>yes</td><td>yes</td><td>refused</td></tr>
+          <tr><td><strong>Ask the assistant</strong></td><td>yes</td><td>yes</td><td>refused</td></tr>
+          <tr><td><strong>Impact analysis</strong></td><td>yes</td><td>yes</td><td>refused</td></tr>
+          <tr><td><strong>Generate a change</strong></td><td>yes</td><td>yes</td><td>refused</td></tr>
+          <tr><td><strong>Commit the change</strong></td><td>direct, new branch</td><td>into your fork</td><td>—</td></tr>
+          <tr><td><strong>Open a pull request</strong></td><td>yes</td><td>from your fork, to them</td><td>—</td></tr>
+          <tr><td><strong>Create the fork for you</strong></td><td>not needed</td><td>one click on GitHub first</td><td>—</td></tr>
+          <tr><td><strong>Review a pull request</strong></td><td>yes, and can publish it</td><td>yes; publishing needs comment rights</td><td>—</td></tr>
+          <tr><td><strong>Write to <code>main</code></strong></td><td><span class="chip chip-stop">never</span></td><td><span class="chip chip-stop">never</span></td><td>—</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+
+
+
+
+
+
+
+
+<section id="github">
+  <div class="wrap">
+    <div class="section-head col">
+      <p class="eyebrow">Consequences</p>
+      <h2>Exactly four things can appear on GitHub</h2>
+      <p>
+        Everything CodeWeave writes is one of four ordinary GitHub objects, created as you, visible in the normal places,
+        and undoable by hand. There is no hidden fifth thing.
+      </p>
+    </div>
+
+    <div class="tablewrap">
+      <table>
+        <thead>
+          <tr><th>Object</th><th>When it appears</th><th>What it looks like</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>A branch</strong></td>
+            <td>You press <em>Create branch, commit &amp; open PR</em></td>
+            <td><span class="mono">codeweave/reject-negative-credits-0bziwh</span> — cut from the exact commit the AI read. If the name is taken it becomes <span class="mono">-2</span>, <span class="mono">-3</span>.</td>
+          </tr>
+          <tr>
+            <td><strong>One commit</strong></td>
+            <td>Immediately after the branch</td>
+            <td>All files in the change, in a single commit, with your message. No fixup commits, no force-push.</td>
+          </tr>
+          <tr>
+            <td><strong>A pull request</strong></td>
+            <td>Unless you switch it off in the accept form</td>
+            <td>Targets the default branch. Body is generated — see below — and fully editable before you submit.</td>
+          </tr>
+          <tr>
+            <td><strong>A comment on a pull request</strong></td>
+            <td>You press <em>Publish to GitHub</em>, or a webhook review runs</td>
+            <td>An ordinary issue comment holding the review findings. Not an approval and not a "request changes".</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="grid g2" style="margin-top: 22px;">
+      <div class="card">
+        <h3>The pull request body it writes</h3>
+        <ul class="tight">
+          <li><strong>Summary</strong> — what the change does.</li>
+          <li><strong>Files changed</strong> — each path with <span class="mono">+additions / -deletions</span>.</li>
+          <li><strong>Why</strong> — the model's reasoning, when it gave any.</li>
+          <li><strong>Review notes</strong> — the model's own warnings, kept rather than hidden.</li>
+          <li><strong>Callers to double-check</strong> — pulled from the relationship graph, not guessed.</li>
+          <li><strong>Requested change</strong> — your original instruction, quoted verbatim.</li>
+          <li>A closing line naming CodeWeave, and saying if it came from a fork.</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>What it will not do, enforced on the server</h3>
+        <ul class="tight">
+          <li>Commit to the <strong>default branch</strong> — refused even if the branch field is edited to <code>main</code>.</li>
+          <li><strong>Merge, approve, or request changes</strong> on any pull request.</li>
+          <li><strong>Force-push</strong>, rewrite history, or delete a branch.</li>
+          <li>Touch a file that <strong>was not in the context the AI read</strong>.</li>
+          <li>Push anything to a repository you cannot write to — that goes to your fork instead.</li>
+          <li>Commit a patch whose base file <strong>moved since it was proposed</strong>.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="note" style="margin-top: 22px;">
+      <strong>The last check happens after the branch exists.</strong> Between generating a change and accepting it, someone
+      else may have pushed. So the file is fetched again from the new branch and compared to what the AI actually read — by
+      content hash, not by timestamp. On a mismatch you get <em>"changed on GitHub after this change was proposed"</em>, the
+      commit never happens, and you regenerate against current code.
+    </div>
+  </div>
+</section>
+
+<section id="auto">
+  <div class="wrap">
+    <div class="section-head col">
+      <p class="eyebrow">Without you asking</p>
+      <h2>Two things happen on their own</h2>
+      <p>
+        Once the app is installed on an account, GitHub tells CodeWeave when code lands and when pull requests open. Two
+        jobs run off that, both queued in the background so GitHub is answered instantly and the work happens after.
+      </p>
+    </div>
+
+    <div class="grid g2">
+      <div class="card">
+        <span class="chip chip-accent">on push</span>
+        <h3>The index catches up, cheaply</h3>
+        <div class="flow">
+          <span>push</span><span class="arrow">→</span><span class="hl">changed files only</span><span class="arrow">→</span>
+          <span>re-parse</span><span class="arrow">→</span><span>re-embed</span><span class="arrow">→</span><span>graph</span>
+        </div>
+        <p>
+          A push touching three files re-reads those three files, not the repository. Deleted files lose their chunks,
+          symbols, and graph edges. Answers and impact analysis are current again without anyone pressing
+          <strong>Re-index</strong>.
+        </p>
+        <p class="mono-line">up to 120 changed files per push</p>
+      </div>
+      <div class="card">
+        <span class="chip chip-accent">on pull request</span>
+        <h3>The review is waiting when you look</h3>
+        <div class="flow">
+          <span>opened</span><span class="arrow">/</span><span>reopened</span><span class="arrow">/</span>
+          <span>new commits</span><span class="arrow">→</span><span class="hl">AI review</span><span class="arrow">→</span>
+          <span>comment on the PR</span>
+        </div>
+        <p>
+          The same review you get from <strong>Run AI review</strong>, triggered by GitHub and posted as a comment. Pushing
+          more commits to an open pull request re-runs it against the new head.
+        </p>
+        <p class="mono-line">drafts wait until marked ready for review</p>
+      </div>
+    </div>
+
+    <div class="tablewrap" style="margin-top: 22px;">
+      <table>
+        <thead>
+          <tr><th>Nothing happens when</th><th>Why that is right</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>The repository was never analysed in CodeWeave</td><td>There is no index to update and nobody asked for one.</td></tr>
+          <tr><td>It has never finished indexing</td><td>An incremental update needs something to be incremental against.</td></tr>
+          <tr><td>The push went to a branch other than the indexed one</td><td>Your feature branch shouldn't rewrite the index of <code>main</code>.</td></tr>
+          <tr><td>The push created or deleted a tag, or deleted a branch</td><td>No file contents changed.</td></tr>
+          <tr><td>The pull request is a draft</td><td>It isn't ready for readers, so it isn't ready for review.</td></tr>
+          <tr><td>The same delivery arrives twice</td><td>GitHub retries; the delivery ID is remembered, so the work runs once.</td></tr>
+          <tr><td>The delivery isn't signed by GitHub</td><td>It is rejected before the payload is even parsed.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p class="col" style="margin-top: 22px; color: var(--ink-soft);">
+      All of it is on the record: <strong>Activity</strong> in the sidebar lists AI changes, AI pull request reviews, and
+      indexing jobs, each with the outcome — including the ones that decided to do nothing, and why.
+    </p>
+
+    <div class="note warn" style="margin-top: 22px;">
+      <strong>No installation, no automation.</strong> Analysis and answers work on any public repository with just a signed-in
+      GitHub account. But nothing arrives by itself until the app is installed on the account that owns the repository —
+      you'll simply see the <em>"changed since it was last indexed"</em> banner and re-index by hand.
+    </div>
+  </div>
+</section>
+
+<section id="buttons">
+  <div class="wrap">
+    <div class="section-head col">
+      <p class="eyebrow">Reference</p>
+      <h2>Every button, split by whether it changes anything</h2>
+      <p>
+        The only useful question about a control is what it leaves behind. So the buttons are grouped that way: the ones
+        that just look at things, and the ones that write — to CodeWeave's own index, or to GitHub itself.
+      </p>
+    </div>
+
+    <h3 style="margin-bottom: 12px;">Look only — nothing is created</h3>
+    <div class="tablewrap">
+      <table>
+        <thead>
+          <tr><th>Button</th><th>Where</th><th>What happens</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><strong>Connect GitHub</strong> · <strong>Continue with GitHub</strong></td><td>Landing, sign-in</td><td>Authorize with GitHub. Your GitHub identity is the whole account — there is nothing else to fill in.</td></tr>
+          <tr><td><strong>Analyze public repository</strong></td><td>Landing</td><td>Goes to the same sign-in. Public analysis still needs an identity to keep API limits usable.</td></tr>
+          <tr><td><strong>Ask</strong> · <strong>Ask AI</strong></td><td>AI Assistant, Files</td><td>Answers from retrieved chunks of this repository, with a clickable source line under each claim.</td></tr>
+          <tr><td><strong>Open on GitHub</strong></td><td>Files, repo header, pull requests</td><td>Opens the same file, branch, or PR on github.com in a new tab.</td></tr>
+          <tr><td><strong>Open</strong> · <strong>Back</strong> · <strong>All pull requests</strong></td><td>Cards and lists</td><td>Navigation only.</td></tr>
+          <tr><td><strong>Refresh</strong> · <strong>Try again</strong></td><td>Lists, and any error panel</td><td>Re-requests the same data. Safe to press repeatedly.</td></tr>
+          <tr><td><strong>Toggle theme</strong></td><td>Top bar</td><td>Light or dark. Saved to your account, not just this browser.</td></tr>
+          <tr><td><strong>Sign out</strong></td><td>Avatar menu</td><td>Ends the session here. The app stays installed on GitHub.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3 style="margin: 28px 0 12px;">These write something</h3>
+    <div class="tablewrap">
+      <table>
+        <thead>
+          <tr><th>Button</th><th>Where</th><th>What happens</th><th>Lands in</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Install app</strong> · <strong>Install on GitHub</strong> · <strong>Manage on GitHub</strong></td>
+            <td>Top bar, Settings</td>
+            <td>Opens GitHub's own install screen, where you choose the account and which repositories are covered.</td>
+            <td><span class="chip chip-plain">GitHub settings</span></td>
+          </tr>
+          <tr>
+            <td><strong>Analyze</strong></td><td>Dashboard paste box</td>
+            <td>Registers <span class="mono">owner/repo</span> and checks what your account may do with it. No code is read yet.</td>
+            <td><span class="chip chip-plain">CodeWeave</span></td>
+          </tr>
+          <tr>
+            <td><strong>Index repository</strong> · <strong>Re-index repository</strong></td><td>Repo header, empty tabs</td>
+            <td>Reads the file list, parses the source, builds chunks, vectors, and the relationship graph. Re-indexing replaces the old index.</td>
+            <td><span class="chip chip-plain">CodeWeave</span></td>
+          </tr>
+          <tr>
+            <td><strong>Generate summary</strong> · <strong>Regenerate</strong></td><td>Overview</td>
+            <td>Rewrites the prose summary from the index. The counters and detected stack are facts and don't change.</td>
+            <td><span class="chip chip-plain">CodeWeave</span></td>
+          </tr>
+          <tr>
+            <td><strong>Generate change</strong></td><td>Changes</td>
+            <td>Retrieves the relevant files, asks for the smallest patch, validates it against the current commit, then shows the diff. Nothing is pushed.</td>
+            <td><span class="chip chip-plain">CodeWeave</span></td>
+          </tr>
+          <tr>
+            <td><strong>Reject</strong></td><td>Changes</td>
+            <td>Discards the proposal. It stays in change history, marked rejected. GitHub never saw it.</td>
+            <td><span class="chip chip-plain">CodeWeave</span></td>
+          </tr>
+          <tr>
+            <td><strong>Accept change</strong></td><td>Changes</td>
+            <td>Opens the form: target repository, branch name, commit message, PR title and description, and a switch for the pull request. Still nothing pushed.</td>
+            <td><span class="chip chip-plain">CodeWeave</span></td>
+          </tr>
+          <tr>
+            <td><strong>Fork on GitHub</strong></td><td>Accept form, third-party repos</td>
+            <td>Opens GitHub's fork page. One click there, in your own account.</td>
+            <td><span class="chip chip-warn">GitHub</span></td>
+          </tr>
+          <tr>
+            <td><strong>I've forked it — check again</strong></td><td>Accept form, third-party repos</td>
+            <td>Re-checks for your fork and unlocks the accept button once GitHub reports it exists.</td>
+            <td><span class="chip chip-plain">CodeWeave</span></td>
+          </tr>
+          <tr>
+            <td><strong>Create branch, commit &amp; open PR</strong> · <strong>Fork, commit &amp; open PR</strong></td>
+            <td>Accept form — the one irreversible button</td>
+            <td>Branch, re-verify the base, one commit, then the pull request. Turning the PR switch off stops after the commit.</td>
+            <td><span class="chip chip-warn">GitHub</span></td>
+          </tr>
+          <tr>
+            <td><strong>Run AI review</strong> · <strong>Re-run review</strong></td><td>Pull request detail</td>
+            <td>Reviews the diff against current file contents, dependants from the graph, and the tests. Results stay in CodeWeave.</td>
+            <td><span class="chip chip-plain">CodeWeave</span></td>
+          </tr>
+          <tr>
+            <td><strong>Publish to GitHub</strong></td><td>Pull request detail</td>
+            <td>Posts the review as a comment on the pull request, after a confirmation. It never approves or requests changes.</td>
+            <td><span class="chip chip-warn">GitHub</span></td>
+          </tr>
+          <tr>
+            <td><strong>Reconnect GitHub</strong></td><td>Avatar menu, expired-token panels</td>
+            <td>Refreshes the GitHub authorization when the token has aged out.</td>
+            <td><span class="chip chip-plain">CodeWeave</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p class="col" style="margin-top: 18px; color: var(--ink-soft);">
+      Two buttons in this whole application write to a GitHub repository: the accept button at the end of the change form,
+      and <strong>Publish to GitHub</strong> on a review. Everything before them — including generating a change and reading
+      its diff — is reversible with <strong>Cancel</strong> or <strong>Reject</strong>.
+    </p>
+  </div>
+</section>
+
+<section id="stuck">
+  <div class="wrap">
+    <div class="section-head col">
+      <p class="eyebrow">When it says no</p>
+      <h2>If something looks wrong, it is usually telling you the truth</h2>
+      <p>
+        Most refusals here are GitHub's answer about your account, or a guardrail that caught a patch it could not apply
+        safely. Both are worth reading literally. These are the ones people actually hit.
+      </p>
+    </div>
+
+    <h3 style="margin-bottom: 12px;">Access</h3>
+    <div class="tablewrap">
+      <table>
+        <thead>
+          <tr><th>What you see</th><th>What it means</th><th>What to do</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Install app</strong> in the top bar, or private repositories missing from the list</td>
+            <td>CodeWeave has no installation on that account, so GitHub won't show it private repositories or let anything be written.</td>
+            <td>Install it, choose the right account, and pick <em>All repositories</em> unless you have a reason not to.</td>
+          </tr>
+          <tr>
+            <td><span class="chip chip-warn">Read only</span> on a repository you own</td>
+            <td>Either you're signed in as a different GitHub account, or the installation covers a different account. Installations are never shared between accounts.</td>
+            <td>Check the login in the avatar menu, then <strong>Settings → App installations</strong> for the account that owns the repo.</td>
+          </tr>
+          <tr>
+            <td><em>"CodeWeave cannot fork this repository for you"</em></td>
+            <td>Not a bug and not a missing feature: GitHub only lets an app fork repositories its own installation covers, which never includes a stranger's account.</td>
+            <td><strong>Fork on GitHub</strong> — one click — then <strong>I've forked it — check again</strong>. Everything after that is automatic.</td>
+          </tr>
+          <tr>
+            <td><em>"You don't have access to this private repository."</em></td>
+            <td>Your GitHub account cannot see it, so neither can CodeWeave. Not even file names are returned.</td>
+            <td>Get access on GitHub, or analyse a repository you can reach.</td>
+          </tr>
+          <tr>
+            <td><strong>Reconnect GitHub</strong>, or <em>"GitHub authorization failed"</em></td>
+            <td>The short-lived GitHub token behind your session has aged out.</td>
+            <td>Press it. You keep your repositories, indexes, and change history.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3 style="margin: 28px 0 12px;">Changes and indexing</h3>
+    <div class="tablewrap">
+      <table>
+        <thead>
+          <tr><th>What you see</th><th>What it means</th><th>What to do</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><em>"This repository has changed since it was last indexed"</em></td>
+            <td>New commits landed after the index was built. Answers are honest about being behind rather than quietly stale.</td>
+            <td><strong>Re-index repository</strong> — or install the app on that account and pushes sync themselves.</td>
+          </tr>
+          <tr>
+            <td><em>"…changed on GitHub after this change was proposed"</em></td>
+            <td>Someone pushed between generating the change and accepting it, so the patch no longer matches the file. <strong>Nothing was committed.</strong></td>
+            <td>Generate the change again; it will be built against the current code.</td>
+          </tr>
+          <tr>
+            <td><em>"The AI tried to modify … which was not part of the reviewed context"</em></td>
+            <td>A guardrail. The model reached for a file that was never retrieved, so its edit was refused rather than applied blind.</td>
+            <td>Ask again, naming the file or function you mean, so it is retrieved as context.</td>
+          </tr>
+          <tr>
+            <td><em>"…is too large for a full-file rewrite"</em> or <em>"likely truncated"</em></td>
+            <td>The model tried to reprint a big file and would have dropped part of it. Refused instead of committing a mutilated file.</td>
+            <td>Ask for a narrower change — one function, one behaviour.</td>
+          </tr>
+          <tr>
+            <td><em>"Could not generate a safe change"</em></td>
+            <td>Nothing usable survived validation for this instruction.</td>
+            <td>Rephrase concretely: what should happen, where, and to what. Vague instructions fail this step most often.</td>
+          </tr>
+          <tr>
+            <td>The assistant says it cannot find anything relevant</td>
+            <td>Retrieval came back empty — often a partial index, or a question about code that isn't in this repository.</td>
+            <td>Check the indexed coverage it reports, re-index if it is low, and mention a real file or symbol name.</td>
+          </tr>
+          <tr>
+            <td><em>"Indexing failed"</em></td>
+            <td>A GitHub read or an embedding call gave out partway through.</td>
+            <td><strong>Activity → Indexing jobs</strong> holds the actual error. Re-indexing after a transient failure usually just works.</td>
+          </tr>
+          <tr>
+            <td>A pull request opened, but no review appeared</td>
+            <td>Automatic review needs an index and a non-draft pull request on a tracked repository.</td>
+            <td>Index the repository, or open it and press <strong>Run AI review</strong>.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="grid g3" style="margin-top: 22px;">
+      <div class="card">
+        <h4>Limits, per account</h4>
+        <p><strong>12</strong> change generations or reviews per 5 minutes. <strong>15</strong> other AI requests per minute.</p>
+      </div>
+      <div class="card">
+        <h4>Indexing</h4>
+        <p><strong>10</strong> index runs per 10 minutes. Automatic syncs after a push don't count against it.</p>
+      </div>
+      <div class="card">
+        <h4>GitHub writes</h4>
+        <p><strong>20</strong> per minute — far above anything a person does by hand, and there to catch loops.</p>
+      </div>
+    </div>
+
+    <div class="note" style="margin-top: 22px;">
+      <strong>One habit covers most of it.</strong> Read the message rather than retrying the button. Nearly every refusal in
+      CodeWeave names the file, the account, or the permission it is talking about, because the alternative — a patch applied
+      to code the model never saw — is the failure that actually costs you something.
+    </div>
+  </div>
+</section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <p><strong>CodeWeave handbook.</strong> One repository at a time, read as you, written as you.</p>
+    <p>Every limit on this page is enforced on the server, not just hidden in the interface — including the one that refuses to commit to <code>main</code>.</p>
+  </div>
+</footer>
+</body>
+</html>
