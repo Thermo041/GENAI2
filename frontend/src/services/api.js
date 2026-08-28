@@ -40,8 +40,10 @@ export const api = axios.create({
   headers: { 'Content-Type': 'application/json' },
 });
 
+let cachedCsrfToken = '';
+
 api.interceptors.request.use((config) => {
-  const token = readCookie(CSRF_COOKIE);
+  const token = cachedCsrfToken || readCookie(CSRF_COOKIE);
   if (token && !['get', 'head', 'options'].includes((config.method || 'get').toLowerCase())) {
     config.headers[CSRF_HEADER] = token;
   }
@@ -56,8 +58,15 @@ export function onAuthExpired(listener) {
 }
 
 api.interceptors.response.use(
-  (response) => (response.data && 'data' in response.data ? response.data.data : response.data),
+  (response) => {
+    const headerToken = response.headers?.[CSRF_HEADER.toLowerCase()];
+    if (headerToken) cachedCsrfToken = headerToken;
+    return response.data && 'data' in response.data ? response.data.data : response.data;
+  },
   (error) => {
+    const headerToken = error.response?.headers?.[CSRF_HEADER.toLowerCase()];
+    if (headerToken) cachedCsrfToken = headerToken;
+
     if (axios.isCancel(error)) return Promise.reject(new ApiError({ code: 'CANCELLED', message: 'Request cancelled.' }));
 
     const status = error.response?.status;

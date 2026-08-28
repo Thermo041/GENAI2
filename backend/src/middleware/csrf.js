@@ -24,6 +24,7 @@ export function csrfToken(req, res, next) {
     });
   }
   req.csrfToken = token;
+  res.set(HEADER, token);
   return next();
 }
 
