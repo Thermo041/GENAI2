@@ -7,7 +7,7 @@ import { useRepository } from '../../context/RepositoryContext.jsx';
 import { useAuth } from '../../context/AuthContext.jsx';
 import { Button } from '../../components/ui/button.jsx';
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card.jsx';
-import { Badge, Label, Mono, Textarea } from '../../components/ui/primitives.jsx';
+import { Badge, Input, Label, Mono, Textarea } from '../../components/ui/primitives.jsx';
 import { Alert, EmptyState, ErrorState, LoadingLines } from '../../components/ui/feedback.jsx';
 import { ChangeReview } from '../../components/changes/ChangeReview.jsx';
 import { ApplyDialog } from '../../components/changes/ApplyDialog.jsx';
@@ -19,10 +19,15 @@ const EXAMPLES = [
   'Add a defensive null check before using the user object.',
 ];
 
+function parseTargetFiles(value) {
+  return [...new Set(value.split(',').map((path) => path.trim()).filter(Boolean))];
+}
+
 export default function ChangesTab() {
   const { owner, repo, indexed, canWrite, startIndexing, isIndexing, repository } = useRepository();
   const { user } = useAuth();
   const [instruction, setInstruction] = useState('');
+  const [targetFiles, setTargetFiles] = useState('');
   const [generating, setGenerating] = useState(false);
   const [generateError, setGenerateError] = useState(null);
   const [current, setCurrent] = useState(null);
@@ -36,10 +41,15 @@ export default function ChangesTab() {
     event?.preventDefault();
     const text = instruction.trim();
     if (text.length < 6) return;
+    const files = parseTargetFiles(targetFiles);
+    if (files.length > 4) {
+      setGenerateError(new Error('Choose at most four target files.'));
+      return;
+    }
     setGenerating(true);
     setGenerateError(null);
     try {
-      const data = await aiApi.generateChange({ owner, repo, instruction: text });
+      const data = await aiApi.generateChange({ owner, repo, instruction: text, ...(files.length ? { files } : {}) });
       setCurrent(data.change);
       setSuggestions(data.suggestions);
       toast.success('Change proposed — review the diff before accepting');
@@ -119,6 +129,20 @@ export default function ChangesTab() {
               className="text-xs"
               disabled={generating}
             />
+            <div className="space-y-1.5">
+              <Label htmlFor="target-files">Target files (optional)</Label>
+              <Input
+                id="target-files"
+                value={targetFiles}
+                onChange={(event) => setTargetFiles(event.target.value)}
+                placeholder="e.g. hii.txt, src/services/user.service.js"
+                className="text-xs"
+                disabled={generating}
+              />
+              <p className="text-2xs text-muted-foreground">
+                Use comma-separated repository paths to make specific existing files editable. Choose up to four files.
+              </p>
+            </div>
             <div className="flex flex-wrap items-center justify-between gap-2">
               <div className="flex flex-wrap gap-1.5">
                 {EXAMPLES.map((example) => (
